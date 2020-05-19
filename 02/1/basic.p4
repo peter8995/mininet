@@ -11,9 +11,9 @@ struct metadata {
 }     
 
  
-
+//此範例不需要解析標頭檔，故為空
 struct headers {
-}
+}     
 
  
 
@@ -21,6 +21,7 @@ struct headers {
 *********************** P A R S E R  ***********************************
 *************************************************************************/
 
+//此範例不需要對標頭做任何解析，故parser只需做transition accept(分析已結束)
 parser MyParser(packet_in packet,
                 out headers hdr,
                 inout metadata meta,
@@ -30,7 +31,7 @@ parser MyParser(packet_in packet,
         transition accept;
     }
 
-}
+}     
 
  
 
@@ -41,7 +42,7 @@ parser MyParser(packet_in packet,
 *************************************************************************/
 
  
-
+//檢查傳輸封包的內容有沒有誤
 control MyVerifyChecksum(inout headers hdr, inout metadata meta) {  
     apply {  }
 }
@@ -49,6 +50,8 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 /*************************************************************************
 **************  I N G R E S S   P R O C E S S I N G   *******************
 *************************************************************************/
+//匹配規則，做對應的事情
+//從apply開始看
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
@@ -60,19 +63,21 @@ control MyIngress(inout headers hdr,
         standard_metadata.egress_spec = port;
     }
 
+    //規則存放於table
     table phy_forward {
         key = {
-            standard_metadata.ingress_port: exact;
+            standard_metadata.ingress_port: exact;    //standard_metedata.ingress_port：內建參數，用來存放封包從哪一個阜號進來
         }
 
         actions = {
-            forward;
-            drop;
+            forward;    //轉發
+            drop;       //丟棄
         }
-        size = 1024;
-        default_action = drop();
+        size = 1024;    //此表格存能存放1024條規則
+        default_action = drop();    //預設規則
     }
-
+    
+    
     apply {
         phy_forward.apply();
     }
@@ -101,6 +106,7 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 ***********************  D E P A R S E R  *******************************
 *************************************************************************/
 
+//重組封包，此範例沒解析，也就不需要重組
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
     }
